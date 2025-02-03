@@ -100,25 +100,18 @@ VoiceAllocationUnit::HandleMidiNoteOn(int note, float velocity, int ch)
 {
 	if (ch >= NUMBER_CHANNELS) ch = 0;
 	assert (note >= 0);
-	assert (note < 128);
-	
-	printf("TestOn1 %d %d\n", ch, note);
+	assert (note < 128);	
 
 	// Checks if the note is within the note ranges activated in the current keyboard map.
 	// The above assertions guarantee the safety of this check.
 	if (!shouldPlayNote(note, ch))
 		return;
 	
-	printf("TestOn2 %d %d\n", ch, note);
-
 	float pitch = (float) noteToPitch(note, ch);
 	
-	printf("TestOn3 %d %d %f\n", ch, note, pitch);
 	if (pitch < 0) { // unmapped key
 		return;
 	}
-	
-	printf("TestOn4 %d %d %f\n", ch, note, pitch);
 	
 	float portamentoTime = mPortamentoTime;
 	if (mPortamentoMode == PortamentoModeLegato) {
@@ -136,7 +129,6 @@ VoiceAllocationUnit::HandleMidiNoteOn(int note, float velocity, int ch)
 	keyPressed[ch][note] = true;
 	
 	if (_keyboardMode == KeyboardModePoly) {
-        printf("POLY\n");
 		if (mMaxVoices) {
 			unsigned count = 0;
 			for (int i=0; i<128; i++)
@@ -190,8 +182,6 @@ VoiceAllocationUnit::HandleMidiNoteOn(int note, float velocity, int ch)
 	}
 	
 	if (_keyboardMode == KeyboardModeMono || _keyboardMode == KeyboardModeLegato) {
-        printf("MONO\n");
-
 		int previousNote = -1;
 		unsigned keyPress = 0;
 		for (int i = 0; i < 128; i++) {
