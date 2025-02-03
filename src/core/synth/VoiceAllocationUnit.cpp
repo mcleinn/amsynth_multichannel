@@ -101,16 +101,24 @@ VoiceAllocationUnit::HandleMidiNoteOn(int note, float velocity, int ch)
 	if (ch >= NUMBER_CHANNELS) ch = 0;
 	assert (note >= 0);
 	assert (note < 128);
+	
+	printf("TestOn1 %d %d\n", ch, note);
 
 	// Checks if the note is within the note ranges activated in the current keyboard map.
 	// The above assertions guarantee the safety of this check.
 	if (!shouldPlayNote(note, ch))
 		return;
+	
+	printf("TestOn2 %d %d\n", ch, note);
 
 	float pitch = (float) noteToPitch(note, ch);
+	
+	printf("TestOn3 %d %d %f\n", ch, note, pitch);
 	if (pitch < 0) { // unmapped key
 		return;
 	}
+	
+	printf("TestOn4 %d %d %f\n", ch, note, pitch);
 	
 	float portamentoTime = mPortamentoTime;
 	if (mPortamentoMode == PortamentoModeLegato) {
@@ -165,7 +173,7 @@ VoiceAllocationUnit::HandleMidiNoteOn(int note, float velocity, int ch)
 		_keyPresses[ch][note] = (++_keyPressCounter);
 
 		int v = note + ch * 128;
-		printf("HandleMidiNoteOn %d %d %d\n", ch, note, v);
+		printf("HandleMidiNoteOn %d %d %d %f\n", ch, note, v, pitch);
 		if (mLastNoteFrequency > 0.0f) {
 			_voices[v]->setFrequency(mLastNoteFrequency, pitch, portamentoTime);
 		} else {
@@ -272,6 +280,30 @@ VoiceAllocationUnit::HandleMidiNoteOff(int note, float /*velocity*/, int ch)
 			voice->triggerOff();
 		}
 	}
+}
+
+void
+VoiceAllocationUnit::HandleVelocityChange(int note, float velocity, int ch)
+{
+	if (ch >= NUMBER_CHANNELS) ch = 0;
+	int v;
+	
+	if (note == -1) {
+		// channel velocity change
+		for(int i=0; i<128; i++) {
+			v = note + ch * 128;
+			if (v > _voices.size()) break;
+			if (!active[ch][note]) continue;
+			printf("HandleVelocityChange %d %d %d %f\n", ch, note, v, velocity);
+			_voices[v]->setVelocity(velocity);
+		}
+		return;
+	}
+	
+	if (!active[ch][note]) return;
+	v = note + ch * 128;
+	printf("HandleVelocityChange %d %d %d %f\n", ch, note, v, velocity);
+	_voices[v]->setVelocity(velocity);
 }
 
 void
@@ -440,8 +472,10 @@ VoiceAllocationUnit::noteToPitch	(int note, int ch) const
 {
 	if (ch >= NUMBER_CHANNELS) ch = 0;
 #ifdef WITH_MTS_ESP
-	if (!mtsEspDisabled && tuningMap.isDefault())
+	if (!mtsEspDisabled && tuningMap.isDefault()) {
+		printf("Asking MTS_ESP...\n");
 		return MTS_NoteToFrequency(mtsClient, note, ch);
+	}
 #endif
 	return tuningMap.noteToPitch(note);
 }

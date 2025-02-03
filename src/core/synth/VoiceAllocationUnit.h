@@ -52,6 +52,7 @@ public:
 	
 	void	HandleMidiNoteOn(int note, float velocity, int ch) override;
 	void	HandleMidiNoteOff(int note, float velocity, int ch) override;
+	void	HandleVelocityChange(int note, float velocity, int ch) override;
 	void	HandleMidiPitchWheel(float value) override;
 	void	HandleMidiPitchWheelSensitivity(uchar semitones) override;
 	void	HandleMidiAllSoundOff() override;

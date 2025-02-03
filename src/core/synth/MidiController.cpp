@@ -40,96 +40,104 @@ void
 MidiController::HandleMidiData(const unsigned char* bytes, unsigned numBytes)
 {
     for (unsigned i=0; i<numBytes; i++)
-	{
-		const unsigned char byte = bytes[i];
-		
-		if (byte & 0x80) {	// then byte is a status byte
-			if (byte < 0xf0) {	// dont deal with system messages
-			status = byte;
-			channel = (byte & 0x0f);
-			data = 0xff;
-			}
-			continue;
-		}
-		// now we have at least one data byte
+    {
+        const unsigned char byte = bytes[i];
+        
+        if (byte & 0x80) {  // then byte is a status byte
+            if (byte < 0xf0) {  // dont deal with system messages
+                status = byte;
+                channel = (byte & 0x0f);
+                data = 0xff;
+            }
+            continue;
+        }
+        // now we have at least one data byte
 
-		bool ignore = (assignedChannel > 0) && ((int) channel != assignedChannel - 1);
+        bool ignore = (assignedChannel > 0) && ((int) channel != assignedChannel - 1);
 
-		switch (status & 0xf0)
-		{
-		case MIDI_STATUS_NOTE_OFF:
-			// N.B. many devices send a 'note on' event with 0 velocity
-			// rather than a distinct 'note off' event.
-			if (data == 0xff) {
-				data = byte;
-				break;
-			}
-			if (!ignore) dispatch_note( channel, data, 0 );
-			data = 0xff;
-			break;
-	
-		case MIDI_STATUS_NOTE_ON:
-			if (data == 0xff) {
-				data = byte;
-				break;
-			}
-				if (!ignore) dispatch_note(channel, data, byte);
-			data = 0xff;
-			break;
-	
-		case MIDI_STATUS_NOTE_PRESSURE:
-			if (data == 0xff) {
-				data = byte;
-				break;
-			}
-			data = 0xff;
-			break;
+        switch (status & 0xf0)
+        {
+        case MIDI_STATUS_NOTE_OFF:
+            if (data == 0xff) {
+                data = byte;
+                break;
+            }
+            if (!ignore) dispatch_note( channel, data, 0 );
+            data = 0xff;
+            break;
+    
+        case MIDI_STATUS_NOTE_ON:
+            if (data == 0xff) {
+                data = byte;
+                break;
+            }
+            if (!ignore) dispatch_note(channel, data, byte);
+            data = 0xff;
+            break;
+    
+        case MIDI_STATUS_NOTE_PRESSURE:
+            if (data == 0xff) {
+                data = byte;
+                break;
+            }
+            printf("Aftertouch (Polyphonic Pressure) - Channel: %d, Note: %d, Value: %d\n", channel, data, byte);
+            velocity_change(channel, data, byte);
+            data = 0xff;
+            break;
+    
+        case MIDI_STATUS_CHANNEL_PRESSURE:
+            printf("Aftertouch (Channel Pressure) - Channel: %d, Value: %d\n", channel, byte);
+            velocity_change(channel, -1, byte);
+            data = 0xff;
+            break;
 
-		case MIDI_STATUS_CONTROLLER:
-			if (data == 0xFF) {
-				data = byte;
-				break;
-			}
-				if (!ignore) controller_change(data, byte);
-			data = 0xFF;
-			break;
+        case MIDI_STATUS_CONTROLLER:
+            if (data == 0xFF) {
+                data = byte;
+                break;
+            }
+            if (!ignore) controller_change(data, byte);
+            data = 0xFF;
+            break;
 
-		case MIDI_STATUS_PROGRAM_CHANGE:
-			if (!ignore && presetController->getCurrPresetNumber() != byte) {
-				if (_handler) _handler->HandleMidiAllSoundOff();
-				presetController->selectPreset((int) byte);
-			}
-			data = 0xff;
-			break;
-	
-		case MIDI_STATUS_CHANNEL_PRESSURE:
-			data = 0xff;
-			break;
-	
-		case MIDI_STATUS_PITCH_WHEEL:
-			// 2 data bytes give a 14 bit value, least significant 7 bits
-			// first
-			if (data == 0xFF) {
-				data = byte;
-				break;
-			}
-			int bend; bend = (int) ((data & 0x7F) | ((byte & 0x7F) << 7));
-			float fbend; fbend = (float) (bend - 0x2000) / (float) (0x2000);
-			if (!ignore) pitch_wheel_change(fbend);
-			data = 0xFF;
-			break;
-	
-		default:
-			fprintf(stderr, "amsynth: invalid status byte: %02x data byte: %02x\n", status, byte);
-			break;
-		}
+        case MIDI_STATUS_PROGRAM_CHANGE:
+            if (!ignore && presetController->getCurrPresetNumber() != byte) {
+                if (_handler) _handler->HandleMidiAllSoundOff();
+                presetController->selectPreset((int) byte);
+            }
+            data = 0xff;
+            break;
+    
+        case MIDI_STATUS_PITCH_WHEEL:
+            if (data == 0xFF) {
+                data = byte;
+                break;
+            }
+            int bend; bend = (int) ((data & 0x7F) | ((byte & 0x7F) << 7));
+            float fbend; fbend = (float) (bend - 0x2000) / (float) (0x2000);
+            if (!ignore) pitch_wheel_change(fbend);
+            data = 0xFF;
+            break;
+    
+        default:
+            fprintf(stderr, "amsynth: invalid status byte: %02x data byte: %02x\n", status, byte);
+            break;
+        }
     }
 }
+
 
 void
 MidiController::pitch_wheel_change(float val)
 {
 	if (_handler) _handler->HandleMidiPitchWheel(val);
+}
+
+void
+MidiController::velocity_change(unsigned char ch, unsigned char note, unsigned char vel)
+{
+	static const float scale = 1.f/127.f;
+	if (_handler) _handler->HandleVelocityChange(note, (float)vel * scale, ch);
 }
 
 void

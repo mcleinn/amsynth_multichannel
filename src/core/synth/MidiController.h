@@ -34,9 +34,10 @@ typedef unsigned char uchar;
 class MidiEventHandler
 {
 public:
-	virtual void HandleMidiNoteOn(int /*note*/, float /*velocity*/, int ch /*channel*/) = 0;
-	virtual void HandleMidiNoteOff(int /*note*/, float /*velocity*/, int ch /*channel*/) = 0;
+	virtual void HandleMidiNoteOn(int /*note*/, float /*velocity*/, int /*channel*/) = 0;
+	virtual void HandleMidiNoteOff(int /*note*/, float /*velocity*/, int /*channel*/) = 0;
 	virtual void HandleMidiPitchWheel(float /*value*/) = 0;
+	virtual void HandleVelocityChange(int /*note*/, float /*velocity*/, int /*channel*/) = 0;
 	virtual void HandleMidiPitchWheelSensitivity(uchar semitones) = 0;
 	virtual void HandleMidiAllSoundOff() = 0;
 	virtual void HandleMidiAllNotesOff() = 0;
@@ -73,6 +74,7 @@ private:
 	void dispatch_note(unsigned char ch,
 		       unsigned char note, unsigned char vel);
     void controller_change(unsigned char controller, unsigned char value);
+    void velocity_change(unsigned char ch, unsigned char note, unsigned char vel);
     void pitch_wheel_change(float val);
 
     void saveControllerMap();
