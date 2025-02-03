@@ -281,7 +281,7 @@ VoiceAllocationUnit::HandleVelocityChange(int note, float velocity, int ch)
 	if (note == -1) {
 		// channel velocity change
 		for(int i=0; i<128; i++) {
-			v = note + ch * 128;
+			v = i + ch * 128;
 			if (v > _voices.size()) break;
 			if (!active[ch][note]) continue;
 			printf("HandleVelocityChange %d %d %d %f\n", ch, note, v, velocity);
