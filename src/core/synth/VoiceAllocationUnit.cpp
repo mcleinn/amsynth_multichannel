@@ -60,11 +60,13 @@ VoiceAllocationUnit::VoiceAllocationUnit ()
 	distortion = new Distortion;
 	mBuffer = new float [kBufferSize * 2];
 
-	for (int i = 0; i < 128; i++)
-	{
-		keyPressed[i] = false;
-		active[i] = false;
-		_voices.push_back (new VoiceBoard);
+	for (int ch = 0; ch < NUMBER_CHANNELS; ch++) {
+		for (int i = 0; i < 128; i++)
+		{
+			keyPressed[ch][i] = false;
+			active[ch][i] = false;
+			_voices.push_back (new VoiceBoard);
+		}
 	}
 	
 	memset(&_keyPresses, 0, sizeof(_keyPresses));
@@ -93,17 +95,17 @@ VoiceAllocationUnit::SetSampleRate	(int rate)
 }
 
 void
-VoiceAllocationUnit::HandleMidiNoteOn(int note, float velocity)
+VoiceAllocationUnit::HandleMidiNoteOn(int note, float velocity, int ch)
 {
 	assert (note >= 0);
 	assert (note < 128);
 
 	// Checks if the note is within the note ranges activated in the current keyboard map.
 	// The above assertions guarantee the safety of this check.
-	if (!shouldPlayNote(note))
+	if (!shouldPlayNote(note, ch))
 		return;
 
-	float pitch = (float) noteToPitch(note);
+	float pitch = (float) noteToPitch(note, ch);
 	if (pitch < 0) { // unmapped key
 		return;
 	}
@@ -112,7 +114,7 @@ VoiceAllocationUnit::HandleMidiNoteOn(int note, float velocity)
 	if (mPortamentoMode == PortamentoModeLegato) {
 		int count = 0;
 		for (int i=0; i<128; i++) {
-			if (keyPressed[i]) {
+			if (keyPressed[ch][i]) {
 				count++;
 			}
 		}
@@ -121,7 +123,7 @@ VoiceAllocationUnit::HandleMidiNoteOn(int note, float velocity)
 		}
 	}
 	
-	keyPressed[note] = true;
+	keyPressed[ch][note] = true;
 	
 	if (_keyboardMode == KeyboardModePoly) {
 
@@ -134,9 +136,9 @@ VoiceAllocationUnit::HandleMidiNoteOn(int note, float velocity)
 				// strategy 1) find the oldest voice in release phase
 				unsigned keyPress = _keyPressCounter + 1;
 				for (int i=0; i<128; i++) {
-					if (active[i] && !keyPressed[i]) {
-						if (keyPress > _keyPresses[i]) {
-							keyPress = _keyPresses[i];
+					if (active[ch][i] && !keyPressed[ch][i]) {
+						if (keyPress > _keyPresses[ch][i]) {
+							keyPress = _keyPresses[ch][i];
 							idx = i;
 						}
 					}
@@ -146,33 +148,34 @@ VoiceAllocationUnit::HandleMidiNoteOn(int note, float velocity)
 					keyPress = _keyPressCounter + 1;
 					for (int i=0; i<128; i++) {
 						if (active[i]) {
-							if (keyPress > _keyPresses[i]) {
-								keyPress = _keyPresses[i];
+							if (keyPress > _keyPresses[ch][i]) {
+								keyPress = _keyPresses[ch][i];
 								idx = i;
 							}
 						}
 					}
 				}
 				assert(0 <= idx && idx < 128);
-				active[idx] = false;
+				active[ch][idx] = false;
 			}
 		}
 
-		_keyPresses[note] = (++_keyPressCounter);
+		_keyPresses[ch][note] = (++_keyPressCounter);
 
+		int v = note + ch * 128;
 		if (mLastNoteFrequency > 0.0f) {
-			_voices[note]->setFrequency(mLastNoteFrequency, pitch, portamentoTime);
+			_voices[v]->setFrequency(mLastNoteFrequency, pitch, portamentoTime);
 		} else {
-			_voices[note]->setFrequency(pitch, pitch, 0);
+			_voices[v]->setFrequency(pitch, pitch, 0);
 		}
 
-		if (_voices[note]->isSilent())
-			_voices[note]->reset();
+		if (_voices[v]->isSilent())
+			_voices[v]->reset();
 		
-		_voices[note]->setVelocity(velocity);
-		_voices[note]->triggerOn(true);
+		_voices[v]->setVelocity(velocity);
+		_voices[v]->triggerOn(true);
 		
-		active[note] = true;
+		active[ch][note] = true;
 	}
 	
 	if (_keyboardMode == KeyboardModeMono || _keyboardMode == KeyboardModeLegato) {
@@ -180,13 +183,13 @@ VoiceAllocationUnit::HandleMidiNoteOn(int note, float velocity)
 		int previousNote = -1;
 		unsigned keyPress = 0;
 		for (int i = 0; i < 128; i++) {
-			if (keyPress < _keyPresses[i]) {
-				keyPress = _keyPresses[i];
+			if (keyPress < _keyPresses[ch][i]) {
+				keyPress = _keyPresses[ch][i];
 				previousNote = i;
 			}
 		}
 
-		_keyPresses[note] = (++_keyPressCounter);
+		_keyPresses[ch][note] = (++_keyPressCounter);
 		
 		VoiceBoard *voice = _voices[0];
 		
@@ -196,20 +199,20 @@ VoiceAllocationUnit::HandleMidiNoteOn(int note, float velocity)
 		if (_keyboardMode == KeyboardModeMono || previousNote == -1)
 			voice->triggerOn(!active[0]);
 		
-		active[0] = true;
+		active[ch][0] = true;
 	}
 
 	mLastNoteFrequency = pitch;
 }
 
 void
-VoiceAllocationUnit::HandleMidiNoteOff(int note, float /*velocity*/)
+VoiceAllocationUnit::HandleMidiNoteOff(int note, float /*velocity*/, int ch)
 {
 	// No action is required if the note is outside the active range of notes.
-	if (!shouldPlayNote(note))
+	if (!shouldPlayNote(note, ch))
 		return;
 
-	keyPressed[note] = false;
+	keyPressed[ch][note] = false;
 
 	if (sustain)
 		return;
@@ -222,18 +225,18 @@ VoiceAllocationUnit::HandleMidiNoteOff(int note, float /*velocity*/)
 		int currentNote = -1;
 		unsigned keyPress = 0;
 		for (int i = 0; i < 128; i++) {
-			if (keyPress < _keyPresses[i]) {
-				keyPress = _keyPresses[i];
+			if (keyPress < _keyPresses[ch][i]) {
+				keyPress = _keyPresses[ch][i];
 				currentNote = i;
 			}
 		}
 		
-		_keyPresses[note] = 0;
+		_keyPresses[ch][note] = 0;
 		
 		int nextNote = -1;
 		for (unsigned i = 0, tmp = 0; i < 128; i++) {
-			if (tmp < _keyPresses[i] && (keyPressed[i] || sustain)) {
-				tmp = _keyPresses[i];
+			if (tmp < _keyPresses[ch][i] && (keyPressed[ch][i] || sustain)) {
+				tmp = _keyPresses[ch][i];
 				nextNote = i;
 			}
 		}
@@ -246,10 +249,11 @@ VoiceAllocationUnit::HandleMidiNoteOff(int note, float /*velocity*/)
 			return;
 		}
 		
-		VoiceBoard *voice = _voices[0];
+		int v = ch * 128;
+		VoiceBoard *voice = _voices[v];
 		
 		if (0 <= nextNote) {
-			voice->setFrequency(voice->getFrequency(), (float) noteToPitch(nextNote), mPortamentoTime);
+			voice->setFrequency(voice->getFrequency(), (float) noteToPitch(nextNote, ch), mPortamentoTime);
 			if (_keyboardMode == KeyboardModeMono)
 				voice->triggerOn(false);
 		} else {
@@ -290,8 +294,8 @@ VoiceAllocationUnit::HandleMidiSustainPedal(uchar value)
 		return;
 
 	for (unsigned i = 0; i < _voices.size(); i++) {
-		if (!keyPressed[i] && _keyPresses[i] > 0) {
-			HandleMidiNoteOff(i, 0);
+		if (!keyPressed[i % 128][i] && _keyPresses[i % 128][i] > 0) {
+			HandleMidiNoteOff(i, 0, i % 128);
 		}
 	}
 }
@@ -300,9 +304,9 @@ void
 VoiceAllocationUnit::resetAllVoices()
 {
 	for (unsigned i=0; i<_voices.size(); i++) {
-		active[i] = false;
-		keyPressed[i] = false;
-		_keyPresses[i] = 0;
+		active[i % 128][i] = false;
+		keyPressed[i % 128][i] = false;
+		_keyPresses[i % 128][i] = 0;
 		_voices[i]->reset();
 	}
 	_keyPressCounter = 0;
@@ -319,7 +323,7 @@ VoiceAllocationUnit::Process		(float *l, float *r, unsigned nframes, int stride)
 	for (unsigned i=0; i<_voices.size(); i++) {
 		if (active[i]) {
 			if (_voices[i]->isSilent()) {
-				active[i] = false;
+				active[i % 128][i] = false;
 			} else {
 				_voices[i]->SetPitchBend(mPitchBendValue);
 				_voices[i]->ProcessSamplesMix (mBuffer, nframes, mMasterVol);
@@ -408,28 +412,22 @@ VoiceAllocationUnit::parameterDidChange(const Parameter &parameter)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// Note: MTS-ESP wants us to supply a MIDI channel when querying retuning or
-// note filtering, in order to support multi-channel tuning tables which are
-// useful for microtonal MIDI controllers with more than 128 keys. We don't yet
-// support this because VoiceAllocationUnit uses the MIDI note number to index
-// _voices[], therefore notes playing on different channels could conflict.
-
 bool
-VoiceAllocationUnit::shouldPlayNote	(int note) const
+VoiceAllocationUnit::shouldPlayNote	(int note, int ch) const
 {
 #ifdef WITH_MTS_ESP
 	if (!mtsEspDisabled && tuningMap.isDefault())
-		return !MTS_ShouldFilterNote(mtsClient, note, 0);
+		return !MTS_ShouldFilterNote(mtsClient, note, ch);
 #endif
 	return tuningMap.inActiveRange(note);
 }
 
 double
-VoiceAllocationUnit::noteToPitch	(int note) const
+VoiceAllocationUnit::noteToPitch	(int note, int ch) const
 {
 #ifdef WITH_MTS_ESP
 	if (!mtsEspDisabled && tuningMap.isDefault())
-		return MTS_NoteToFrequency(mtsClient, note, 0);
+		return MTS_NoteToFrequency(mtsClient, note, ch);
 #endif
 	return tuningMap.noteToPitch(note);
 }

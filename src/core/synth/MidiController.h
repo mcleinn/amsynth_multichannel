@@ -34,8 +34,8 @@ typedef unsigned char uchar;
 class MidiEventHandler
 {
 public:
-	virtual void HandleMidiNoteOn(int /*note*/, float /*velocity*/) = 0;
-	virtual void HandleMidiNoteOff(int /*note*/, float /*velocity*/) = 0;
+	virtual void HandleMidiNoteOn(int /*note*/, float /*velocity*/, int ch /*channel*/) = 0;
+	virtual void HandleMidiNoteOff(int /*note*/, float /*velocity*/, int ch /*channel*/) = 0;
 	virtual void HandleMidiPitchWheel(float /*value*/) = 0;
 	virtual void HandleMidiPitchWheelSensitivity(uchar semitones) = 0;
 	virtual void HandleMidiAllSoundOff() = 0;

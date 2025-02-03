@@ -32,6 +32,7 @@
 #include <stdint.h>
 #include <vector>
 
+#define NUMBER_CHANNELS 16
 
 class VoiceBoard;
 class SoftLimiter;
@@ -49,8 +50,8 @@ public:
 
 	void	SetSampleRate		(int);
 	
-	void	HandleMidiNoteOn(int note, float velocity) override;
-	void	HandleMidiNoteOff(int note, float velocity) override;
+	void	HandleMidiNoteOn(int note, float velocity, int ch) override;
+	void	HandleMidiNoteOff(int note, float velocity, int ch) override;
 	void	HandleMidiPitchWheel(float value) override;
 	void	HandleMidiPitchWheelSensitivity(uchar semitones) override;
 	void	HandleMidiAllSoundOff() override;
@@ -67,8 +68,8 @@ public:
 
 	void	Process			(float *l, float *r, unsigned nframes, int stride=1);
 
-	bool	shouldPlayNote	(int note) const;
-	double	noteToPitch		(int note) const;
+	bool	shouldPlayNote	(int note, int ch) const;
+	double	noteToPitch		(int note, int ch) const;
 	int		loadScale		(const std::string & sclFileName);
 	int		loadKeyMap		(const std::string & kbmFileName);
 
@@ -80,11 +81,11 @@ public:
 
 	float	mPortamentoTime;
 	int		mPortamentoMode;
-	bool	keyPressed[128], sustain;
-	bool	active[128];
+	bool	keyPressed[NUMBER_CHANNELS][128], sustain;
+	bool	active[NUMBER_CHANNELS][128];
 	
 	unsigned	_keyboardMode;
-	unsigned	_keyPresses[128];
+	unsigned	_keyPresses[NUMBER_CHANNELS][128];
 	unsigned	_keyPressCounter;
 	
 	std::vector<VoiceBoard*>	_voices;

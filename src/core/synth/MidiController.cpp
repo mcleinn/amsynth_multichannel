@@ -133,12 +133,12 @@ MidiController::pitch_wheel_change(float val)
 }
 
 void
-MidiController::dispatch_note(unsigned char, unsigned char note, unsigned char vel)
+MidiController::dispatch_note(unsigned char ch, unsigned char note, unsigned char vel)
 {
 	static const float scale = 1.f/127.f;
     if (!_handler) return;
-	if (vel) _handler->HandleMidiNoteOn((int) note, (float)vel * scale);
-	else     _handler->HandleMidiNoteOff((int) note, (float)vel * scale);
+	if (vel) _handler->HandleMidiNoteOn((int) note, (float)vel * scale, ch);
+	else     _handler->HandleMidiNoteOff((int) note, (float)vel * scale, ch);
 }
 
 void

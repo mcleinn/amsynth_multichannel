@@ -595,7 +595,7 @@ void ptest ()
 	
 	// trigger off some notes for amsynth to render.
 	for (int v=0; v<kNumVoices; v++) {
-		voiceAllocationUnit->HandleMidiNoteOn(60 + v, 1.0f);
+		voiceAllocationUnit->HandleMidiNoteOn(60 + v, 1.0f, 0);
 	}
 	
 	struct rusage usage_before; 
