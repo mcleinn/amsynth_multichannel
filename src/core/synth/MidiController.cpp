@@ -80,14 +80,12 @@ MidiController::HandleMidiData(const unsigned char* bytes, unsigned numBytes)
                 data = byte;
                 break;
             }
-            printf("Aftertouch (Polyphonic Pressure) - Channel: %d, Note: %d, Value: %d\n", channel, data, byte);
-            velocity_change(channel, data, byte);
+            if (!ignore) velocity_change(channel, data, byte);
             data = 0xff;
             break;
     
         case MIDI_STATUS_CHANNEL_PRESSURE:
-            printf("Aftertouch (Channel Pressure) - Channel: %d, Value: %d\n", channel, byte);
-            velocity_change(channel, -1, byte);
+            if (!ignore) velocity_change(channel, -1, byte);
             data = 0xff;
             break;
 
@@ -134,7 +132,7 @@ MidiController::pitch_wheel_change(float val)
 }
 
 void
-MidiController::velocity_change(unsigned char ch, unsigned char note, unsigned char vel)
+MidiController::velocity_change(unsigned char ch, int note, unsigned char vel)
 {
 	static const float scale = 1.f/127.f;
 	if (_handler) _handler->HandleVelocityChange(note, (float)vel * scale, ch);
@@ -246,10 +244,6 @@ MidiController::loadControllerMap()
 {
 	clearControllerMap();
 
-#ifdef _WIN32
-	return;
-#endif
-
 	std::ifstream file(filesystem::get().controllers.c_str(), std::ios::out);
 	std::string name;
 	file >> name;
@@ -265,9 +259,6 @@ MidiController::loadControllerMap()
 void
 MidiController::saveControllerMap()
 {
-#ifdef _WIN32
-	return;
-#endif
 	std::ofstream file(filesystem::get().controllers.c_str(), std::ios::out);
 	if (file.bad())
 		return;

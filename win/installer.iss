@@ -28,6 +28,9 @@ WizardStyle=modern
 Source: ..\data\banks\*; DestDir: {commonappdata}\amsynth\banks\; Flags: recursesubdirs
 Source: ..\data\skins\*; DestDir: {commonappdata}\amsynth\skins\; Excludes: "*.knob,*.xcf"; Flags: recursesubdirs
 Source: x64\Release\amsynth.dll; DestDir: "{app}"; Flags: ignoreversion
+Source: x64\Release\amsynth_standalone.exe; DestDir: "{commonpf64}\amsynth"; DestName: "amsynth.exe"; Flags: ignoreversion
+Source: ..\external\MTS-ESP\libMTS\Win\64bit\LIBMTS.dll; DestDir: "{commoncf64}\MTS-ESP"; Flags: ignoreversion
+Source: ..\external\MTS-ESP\libMTS\MTS-ESP.conf; DestDir: "{commoncf64}\MTS-ESP"; Flags: ignoreversion
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"

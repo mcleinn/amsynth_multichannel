@@ -23,6 +23,11 @@
     <ClCompile Include="..\..\external\freeverb\allpass.cpp" />
     <ClCompile Include="..\..\external\freeverb\comb.cpp" />
     <ClCompile Include="..\..\external\freeverb\revmodel.cpp" />
+    <ClCompile Include="..\..\external\JUCE\modules\juce_audio_basics\juce_audio_basics.cpp" />
+    <ClCompile Include="..\..\external\JUCE\modules\juce_audio_devices\juce_audio_devices.cpp" />
+    <ClCompile Include="..\..\external\JUCE\modules\juce_audio_formats\juce_audio_formats.cpp" />
+    <ClCompile Include="..\..\external\JUCE\modules\juce_audio_processors\juce_audio_processors.cpp" />
+    <ClCompile Include="..\..\external\JUCE\modules\juce_audio_utils\juce_audio_utils.cpp" />
     <ClCompile Include="..\..\external\JUCE\modules\juce_core\juce_core.cpp" />
     <ClCompile Include="..\..\external\JUCE\modules\juce_data_structures\juce_data_structures.cpp" />
     <ClCompile Include="..\..\external\JUCE\modules\juce_events\juce_events.cpp" />
@@ -47,38 +52,38 @@
     <ClCompile Include="..\..\src\core\synth\TuningMap.cpp" />
     <ClCompile Include="..\..\src\core\synth\VoiceAllocationUnit.cpp" />
     <ClCompile Include="..\..\src\core\synth\VoiceBoard.cpp" />
-    <ClCompile Include="..\..\src\plugins\vst2\vstplugin.cpp" />
+    <ClCompile Include="..\..\src\win_standalone\main.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{aeb9a51f-1c7d-45d9-93d9-c65dd321ebe7}</ProjectGuid>
-    <RootNamespace>amsynthvst2</RootNamespace>
+    <ProjectGuid>{D5B87C6B-89C1-4C0D-A59A-7117A7A2366E}</ProjectGuid>
+    <RootNamespace>amsynthstandalone</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>amsynth_vst</ProjectName>
+    <ProjectName>amsynth_standalone</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -103,22 +108,22 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <TargetName>amsynth</TargetName>
+    <TargetName>amsynth_standalone</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <TargetName>amsynth</TargetName>
+    <TargetName>amsynth_standalone</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <TargetName>amsynth</TargetName>
+    <TargetName>amsynth_standalone</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <TargetName>amsynth</TargetName>
+    <TargetName>amsynth_standalone</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;WITH_MTS_ESP;JUCE_GLOBAL_MODULE_SETTINGS_INCLUDED;JUCE_CHECK_MEMORY_LEAKS=0;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;WITH_MTS_ESP;JUCE_GLOBAL_MODULE_SETTINGS_INCLUDED;JUCE_USE_CURL=0;JUCE_WEB_BROWSER=0;JUCE_CHECK_MEMORY_LEAKS=0;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>..\..\external;..\..\external\JUCE\modules;..\..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/bigobj</AdditionalOptions>
@@ -136,10 +141,9 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;WITH_MTS_ESP;JUCE_GLOBAL_MODULE_SETTINGS_INCLUDED;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;WITH_MTS_ESP;JUCE_GLOBAL_MODULE_SETTINGS_INCLUDED;JUCE_USE_CURL=0;JUCE_WEB_BROWSER=0;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeaderFile>
-      </PrecompiledHeaderFile>
+      <PrecompiledHeaderFile></PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>..\..\external;..\..\external\JUCE\modules;..\..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/bigobj</AdditionalOptions>
     </ClCompile>
@@ -155,7 +159,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;WITH_MTS_ESP;JUCE_GLOBAL_MODULE_SETTINGS_INCLUDED;JUCE_CHECK_MEMORY_LEAKS=0;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;WITH_MTS_ESP;JUCE_GLOBAL_MODULE_SETTINGS_INCLUDED;JUCE_USE_CURL=0;JUCE_WEB_BROWSER=0;JUCE_CHECK_MEMORY_LEAKS=0;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>..\..\external;..\..\external\JUCE\modules;..\..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/bigobj</AdditionalOptions>
@@ -166,9 +170,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
     </Link>
-    <PostBuildEvent>
-      <Command>if exist "%ProgramFiles%\Steinberg\VstPlugins" (xcopy /y "$(TargetPath)" "%ProgramFiles%\Steinberg\VstPlugins")</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -176,10 +177,9 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;WITH_MTS_ESP;JUCE_GLOBAL_MODULE_SETTINGS_INCLUDED;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;WITH_MTS_ESP;JUCE_GLOBAL_MODULE_SETTINGS_INCLUDED;JUCE_USE_CURL=0;JUCE_WEB_BROWSER=0;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeaderFile>
-      </PrecompiledHeaderFile>
+      <PrecompiledHeaderFile></PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>..\..\external;..\..\external\JUCE\modules;..\..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/bigobj</AdditionalOptions>
     </ClCompile>
@@ -190,9 +190,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
     </Link>
-    <PostBuildEvent>
-      <Command>if exist "%ProgramFiles%\Steinberg\VstPlugins" (xcopy /y "$(TargetPath)" "%ProgramFiles%\Steinberg\VstPlugins")</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

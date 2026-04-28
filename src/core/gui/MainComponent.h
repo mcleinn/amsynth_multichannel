@@ -41,6 +41,7 @@ public:
 
 	// Sends a property value to the Synthesizer.
 	std::function<void(const char *name, const char *value)> sendProperty;
+	std::function<void()> openSettings;
 
 	// At startup, receives property values from the Synthesizer.
 	void propertyChanged(const char *name, const char *value);

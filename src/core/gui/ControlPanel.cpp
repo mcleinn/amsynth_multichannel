@@ -36,6 +36,36 @@
 #include <utility>
 #include <vector>
 
+namespace {
+
+std::string getDefaultSkinDirectory()
+{
+#ifdef PKGDATADIR
+    return PKGDATADIR "/skins";
+#elif JUCE_MAC
+    return "/Library/Application Support/amsynth/skins";
+#elif JUCE_WINDOWS
+    if (const char *programData = getenv("ProgramData")) {
+        auto installed = juce::File(std::string(programData) + "\\amsynth\\skins");
+        if (installed.isDirectory()) {
+            return installed.getFullPathName().toStdString();
+        }
+    }
+
+    auto exeDir = juce::File::getSpecialLocation(juce::File::currentExecutableFile).getParentDirectory();
+    for (const auto &relativePath : {"../../../data/skins", "../../data/skins", "../data/skins", "data/skins"}) {
+        auto candidate = exeDir.getChildFile(relativePath);
+        if (candidate.isDirectory()) {
+            return candidate.getFullPathName().toStdString();
+        }
+    }
+
+    return std::string(getenv("ProgramData") ? getenv("ProgramData") : "") + "\\amsynth\\skins";
+#endif
+}
+
+} // namespace
+
 class Skin
 {
 public:
@@ -169,7 +199,7 @@ void ControlPanel::paint(juce::Graphics &g)
 	if (impl_->components_.empty()) {
 		g.setFont(15.f);
 		g.setColour(findColour(juce::Label::textColourId));
-		g.drawFittedText("Error: could not load "  + impl_->skinDir_ + "/default/layout.ini",
+		g.drawFittedText("Error: could not load "  + impl_->skinDir_ + "/layout.ini",
 						 20, 20, getWidth() - 40, getHeight() - 40,
 						 juce::Justification::horizontallyCentred | juce::Justification::verticallyCentred, 2);
 	} else {
@@ -177,10 +207,4 @@ void ControlPanel::paint(juce::Graphics &g)
 	}
 }
 
-#ifdef PKGDATADIR
-std::string ControlPanel::skinsDirectory {PKGDATADIR "/skins"};
-#elif JUCE_MAC
-std::string ControlPanel::skinsDirectory {"/Library/Application Support/amsynth/skins"};
-#elif JUCE_WINDOWS
-std::string ControlPanel::skinsDirectory = std::string(getenv("ProgramData")) + "\\amsynth\\skins";
-#endif
+std::string ControlPanel::skinsDirectory {getDefaultSkinDirectory()};

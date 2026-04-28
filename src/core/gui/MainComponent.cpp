@@ -259,6 +259,11 @@ struct MainComponent::Impl : private juce::Timer {
 			return submenu;
 		}());
 		if (!component_->isPlugin) {
+			if (component_->openSettings) {
+				menu.addItem(GETTEXT("Audio/MIDI Settings..."), [this] {
+					component_->openSettings();
+				});
+			}
 			menu.addSubMenu(GETTEXT("MIDI Channel"), [&] {
 				juce::PopupMenu submenu;
                 auto key = PROP_NAME(midi_channel);

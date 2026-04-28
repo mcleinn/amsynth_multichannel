@@ -74,7 +74,7 @@ private:
 	void dispatch_note(unsigned char ch,
 		       unsigned char note, unsigned char vel);
     void controller_change(unsigned char controller, unsigned char value);
-    void velocity_change(unsigned char ch, unsigned char note, unsigned char vel);
+    void velocity_change(unsigned char ch, int note, unsigned char vel);
     void pitch_wheel_change(float val);
 
     void saveControllerMap();

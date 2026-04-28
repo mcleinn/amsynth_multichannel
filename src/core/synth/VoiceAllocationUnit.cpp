@@ -68,7 +68,6 @@ VoiceAllocationUnit::VoiceAllocationUnit ()
 			_voices.push_back (new VoiceBoard);
 		}
 	}
-	printf("Voices: %d\n", _voices.size());
 	
 	memset(&_keyPresses, 0, sizeof(_keyPresses));
 
@@ -165,7 +164,6 @@ VoiceAllocationUnit::HandleMidiNoteOn(int note, float velocity, int ch)
 		_keyPresses[ch][note] = (++_keyPressCounter);
 
 		int v = note + ch * 128;
-		printf("HandleMidiNoteOn %d %d %d %f\n", ch, note, v, pitch);
 		if (mLastNoteFrequency > 0.0f) {
 			_voices[v]->setFrequency(mLastNoteFrequency, pitch, portamentoTime);
 		} else {
@@ -192,7 +190,6 @@ VoiceAllocationUnit::HandleMidiNoteOn(int note, float velocity, int ch)
 		}
 		
 		int v = ch * 128;
-		printf("HandleMidiNoteOn MONO %d %d %d\n", ch, note, v);
 
 		_keyPresses[ch][note] = (++_keyPressCounter);
 		
@@ -226,7 +223,6 @@ VoiceAllocationUnit::HandleMidiNoteOff(int note, float /*velocity*/, int ch)
 
 	if (_keyboardMode == KeyboardModePoly) {
 		int v = note + ch * 128;
-		printf("HandleMidiNoteOff %d %d %d\n", ch, note, v);
 		_voices[v]->triggerOff();
 	}
 
@@ -259,7 +255,6 @@ VoiceAllocationUnit::HandleMidiNoteOff(int note, float /*velocity*/, int ch)
 		}
 		
 		int v = ch * 128;
-		printf("HandleMidiNoteOff MONO %d %d %d\n", ch, note, v);
 		VoiceBoard *voice = _voices[v];
 		
 		if (0 <= nextNote) {
@@ -276,24 +271,20 @@ void
 VoiceAllocationUnit::HandleVelocityChange(int note, float velocity, int ch)
 {
 	if (ch >= NUMBER_CHANNELS) ch = 0;
-	int v;
 	
 	if (note == -1) {
-		// channel velocity change
-		for(int i=0; i<128; i++) {
-			v = i + ch * 128;
-			if (v > _voices.size()) break;
-			if (!active[ch][note]) continue;
-			printf("HandleVelocityChange %d %d %d %f\n", ch, note, v, velocity);
-			_voices[v]->setVelocity(velocity);
+		for (int i = 0; i < 128; i++) {
+			if (!active[ch][i])
+				continue;
+			_voices[i + ch * 128]->setVelocity(velocity);
 		}
 		return;
 	}
 	
-	if (!active[ch][note]) return;
-	v = note + ch * 128;
-	printf("HandleVelocityChange %d %d %d %f\n", ch, note, v, velocity);
-	_voices[v]->setVelocity(velocity);
+	if (!active[ch][note])
+		return;
+
+	_voices[note + ch * 128]->setVelocity(velocity);
 }
 
 void
@@ -463,7 +454,6 @@ VoiceAllocationUnit::noteToPitch	(int note, int ch) const
 	if (ch >= NUMBER_CHANNELS) ch = 0;
 #ifdef WITH_MTS_ESP
 	if (!mtsEspDisabled && tuningMap.isDefault()) {
-		printf("Asking MTS_ESP...\n");
 		return MTS_NoteToFrequency(mtsClient, note, ch);
 	}
 #endif
